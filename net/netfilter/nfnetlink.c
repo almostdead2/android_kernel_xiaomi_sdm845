@@ -148,7 +148,8 @@ int nfnetlink_unicast(struct sk_buff *skb, struct net *net, u32 portid,
 EXPORT_SYMBOL_GPL(nfnetlink_unicast);
 
 /* Process one complete nfnetlink message. */
-static int nfnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+static int nfnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
+			     struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	const struct nfnl_callback *nc;
@@ -192,7 +193,7 @@ replay:
 		__u8 subsys_id = NFNL_SUBSYS_ID(type);
 
 		err = nla_parse(cda, ss->cb[cb_id].attr_count,
-				attr, attrlen, ss->cb[cb_id].policy);
+				attr, attrlen, ss->cb[cb_id].policy, extack);
 		if (err < 0) {
 			rcu_read_unlock();
 			return err;
@@ -200,7 +201,8 @@ replay:
 
 		if (nc->call_rcu) {
 			err = nc->call_rcu(net, net->nfnl, skb, nlh,
-					   (const struct nlattr **)cda);
+					   (const struct nlattr **)cda,
+					   extack);
 			rcu_read_unlock();
 		} else {
 			rcu_read_unlock();
@@ -210,7 +212,8 @@ replay:
 				err = -EAGAIN;
 			else if (nc->call)
 				err = nc->call(net, net->nfnl, skb, nlh,
-					       (const struct nlattr **)cda);
+					       (const struct nlattr **)cda,
+					       extack);
 			else
 				err = -EINVAL;
 			nfnl_unlock(subsys_id);
@@ -225,9 +228,11 @@ struct nfnl_err {
 	struct list_head	head;
 	struct nlmsghdr		*nlh;
 	int			err;
+	struct netlink_ext_ack	extack;
 };
 
-static int nfnl_err_add(struct list_head *list, struct nlmsghdr *nlh, int err)
+static int nfnl_err_add(struct list_head *list, struct nlmsghdr *nlh, int err,
+			const struct netlink_ext_ack *extack)
 {
 	struct nfnl_err *nfnl_err;
 
@@ -237,6 +242,7 @@ static int nfnl_err_add(struct list_head *list, struct nlmsghdr *nlh, int err)
 
 	nfnl_err->nlh = nlh;
 	nfnl_err->err = err;
+	nfnl_err->extack = *extack;
 	list_add_tail(&nfnl_err->head, list);
 
 	return 0;
@@ -280,6 +286,7 @@ static void nfnetlink_rcv_batch(struct sk_buff *skb, struct nlmsghdr *nlh,
 	struct net *net = sock_net(skb->sk);
 	const struct nfnetlink_subsystem *ss;
 	const struct nfnl_callback *nc;
+	struct netlink_ext_ack extack;
 	static LIST_HEAD(err_list);
 	u32 status;
 	int err;
@@ -319,6 +326,7 @@ replay:
 	while (skb->len >= nlmsg_total_size(0)) {
 		int msglen, type;
 
+		memset(&extack, 0, sizeof(extack));
 		nlh = nlmsg_hdr(skb);
 		err = 0;
 
@@ -378,7 +386,8 @@ replay:
 
 			if (nc->call_batch) {
 				err = nc->call_batch(net, net->nfnl, skb, nlh,
-						     (const struct nlattr **)cda);
+						     (const struct nlattr **)cda,
+						     &extack);
 			}
 
 			/* The lock was released to autoload some module, we
@@ -396,7 +405,7 @@ ack:
 			 * processed, this avoids that the same error is
 			 * reported several times when replaying the batch.
 			 */
-			if (nfnl_err_add(&err_list, nlh, err) < 0) {
+			if (nfnl_err_add(&err_list, nlh, err, &extack) < 0) {
 				/* We failed to enqueue an error, reset the
 				 * list of errors and send OOM to userspace
 				 * pointing to the batch header.
