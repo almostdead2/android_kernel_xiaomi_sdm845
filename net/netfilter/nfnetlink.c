@@ -192,8 +192,8 @@ replay:
 		int attrlen = nlh->nlmsg_len - min_len;
 		__u8 subsys_id = NFNL_SUBSYS_ID(type);
 
-		err = nla_parse(cda, ss->cb[cb_id].attr_count,
-				attr, attrlen, ss->cb[cb_id].policy, extack);
+		err = nla_parse(cda, ss->cb[cb_id].attr_count, attr, attrlen,
+				ss->cb[cb_id].policy, extack);
 		if (err < 0) {
 			rcu_read_unlock();
 			return err;
@@ -379,8 +379,8 @@ replay:
 			struct nlattr *attr = (void *)nlh + min_len;
 			int attrlen = nlh->nlmsg_len - min_len;
 
-			err = nla_parse(cda, ss->cb[cb_id].attr_count,
-					attr, attrlen, ss->cb[cb_id].policy);
+			err = nla_parse(cda, ss->cb[cb_id].attr_count, attr,
+					attrlen, ss->cb[cb_id].policy, NULL);
 			if (err < 0)
 				goto ack;
 
