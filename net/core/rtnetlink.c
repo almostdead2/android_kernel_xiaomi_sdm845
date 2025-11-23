@@ -2596,8 +2596,7 @@ replay:
 					return -EOPNOTSUPP;
 
 				err = m_ops->slave_changelink(master_dev, dev,
-							      tb, slave_data,
-							      extack);
+							      tb, slave_data);
 				if (err < 0)
 					return err;
 				status |= DO_SETLINK_NOTIFY;
@@ -2670,8 +2669,7 @@ replay:
 		dev->ifindex = ifm->ifi_index;
 
 		if (ops->newlink) {
-			err = ops->newlink(link_net ? : net, dev, tb, data,
-					   extack);
+			err = ops->newlink(link_net ? : net, dev, tb, data);
 			/* Drivers should call free_netdev() in ->destructor
 			 * and unregister it on failure after registration
 			 * so that device could be finally freed in rtnl_unlock.
