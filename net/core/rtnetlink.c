@@ -1922,7 +1922,7 @@ static int do_set_master(struct net_device *dev, int ifindex,
 			return -EINVAL;
 		ops = upper_dev->netdev_ops;
 		if (ops->ndo_add_slave) {
-			err = ops->ndo_add_slave(upper_dev, dev, extack);
+			err = ops->ndo_add_slave(upper_dev, dev);
 			if (err)
 				return err;
 		} else {
@@ -2016,7 +2016,7 @@ static int do_setlink(const struct sk_buff *skb,
 	}
 
 	if (tb[IFLA_MTU]) {
-		err = dev_set_mtu(dev, nla_get_u32(tb[IFLA_MTU]), extack);
+		err = dev_set_mtu(dev, nla_get_u32(tb[IFLA_MTU]));
 		if (err < 0)
 			goto errout;
 		status |= DO_SETLINK_MODIFIED;
