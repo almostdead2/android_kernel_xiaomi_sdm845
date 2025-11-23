@@ -237,6 +237,28 @@ int __rtnl_register(int protocol, int msgtype,
 EXPORT_SYMBOL_GPL(__rtnl_register);
 
 /**
+ * rtnl_register_module - Register a rtnetlink message type
+ *
+ * @owner: module registering the hook (THIS_MODULE)
+ * @protocol: Protocol family or PF_UNSPEC
+ * @msgtype: rtnetlink message type
+ * @doit: Function pointer called for each request message
+ * @dumpit: Function pointer called for each dump request (NLM_F_DUMP) message
+ * @flags: rtnl_link_flags to modifiy behaviour of doit/dumpit functions
+ *
+ * Like rtnl_register, but for use by removable modules.
+ */
+int rtnl_register_module(struct module *owner,
+			 int protocol, int msgtype,
+			 rtnl_doit_func doit, rtnl_dumpit_func dumpit,
+			 unsigned int flags)
+{
+	return rtnl_register_internal(owner, protocol, msgtype,
+				      doit, dumpit, flags);
+}
+EXPORT_SYMBOL_GPL(rtnl_register_module);
+
+/**
  * rtnl_register - Register a rtnetlink message type
  *
  * Identical to __rtnl_register() but panics on failure. This is useful
