@@ -120,7 +120,8 @@ static int validate_nla(const struct nlattr *nla, int maxtype,
  * Returns 0 on success or a negative error code.
  */
 int nla_validate(const struct nlattr *head, int len, int maxtype,
-		 const struct nla_policy *policy)
+		 const struct nla_policy *policy,
+		 struct netlink_ext_ack *extack)
 {
 	const struct nlattr *nla;
 	int rem, err;
@@ -180,7 +181,8 @@ EXPORT_SYMBOL(nla_policy_len);
  * Returns 0 on success or a negative error code.
  */
 int nla_parse(struct nlattr **tb, int maxtype, const struct nlattr *head,
-	      int len, const struct nla_policy *policy)
+	      int len, const struct nla_policy *policy,
+	      struct netlink_ext_ack *extack)
 {
 	const struct nlattr *nla;
 	int rem, err;
