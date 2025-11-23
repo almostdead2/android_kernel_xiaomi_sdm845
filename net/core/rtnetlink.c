@@ -206,7 +206,8 @@ static rtnl_calcit_func rtnl_get_calcit(int protocol, int msgindex)
  */
 int __rtnl_register(int protocol, int msgtype,
 		    rtnl_doit_func doit, rtnl_dumpit_func dumpit,
-		    rtnl_calcit_func calcit)
+		    rtnl_calcit_func calcit,
+			 unsigned int flags)
 {
 	struct rtnl_link *tab;
 	int msgindex;
