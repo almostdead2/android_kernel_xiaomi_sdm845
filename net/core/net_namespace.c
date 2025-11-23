@@ -584,7 +584,8 @@ static const struct nla_policy rtnl_net_policy[NETNSA_MAX + 1] = {
 	[NETNSA_FD]		= { .type = NLA_U32 },
 };
 
-static int rtnl_net_newid(struct sk_buff *skb, struct nlmsghdr *nlh)
+static int rtnl_net_newid(struct sk_buff *skb, struct nlmsghdr *nlh,
+			  struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct nlattr *tb[NETNSA_MAX + 1];
@@ -658,7 +659,8 @@ nla_put_failure:
 	return -EMSGSIZE;
 }
 
-static int rtnl_net_getid(struct sk_buff *skb, struct nlmsghdr *nlh)
+static int rtnl_net_getid(struct sk_buff *skb, struct nlmsghdr *nlh,
+			  struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct nlattr *tb[NETNSA_MAX + 1];
