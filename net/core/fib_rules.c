@@ -354,7 +354,8 @@ static int rule_exists(struct fib_rules_ops *ops, struct fib_rule_hdr *frh,
 	return 0;
 }
 
-int fib_nl_newrule(struct sk_buff *skb, struct nlmsghdr *nlh)
+int fib_nl_newrule(struct sk_buff *skb, struct nlmsghdr *nlh,
+		   struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct fib_rule_hdr *frh = nlmsg_data(nlh);
@@ -547,7 +548,8 @@ errout:
 }
 EXPORT_SYMBOL_GPL(fib_nl_newrule);
 
-int fib_nl_delrule(struct sk_buff *skb, struct nlmsghdr *nlh)
+int fib_nl_delrule(struct sk_buff *skb, struct nlmsghdr *nlh,
+		   struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct fib_rule_hdr *frh = nlmsg_data(nlh);
