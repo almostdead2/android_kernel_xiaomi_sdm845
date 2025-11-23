@@ -626,13 +626,15 @@ const struct nla_policy rtm_ipv4_policy[RTA_MAX + 1] = {
 };
 
 static int rtm_to_fib_config(struct net *net, struct sk_buff *skb,
-			     struct nlmsghdr *nlh, struct fib_config *cfg)
+			     struct nlmsghdr *nlh, struct fib_config *cfg,
+			     struct netlink_ext_ack *extack)
 {
 	struct nlattr *attr;
 	int err, remaining;
 	struct rtmsg *rtm;
 
-	err = nlmsg_validate(nlh, sizeof(*rtm), RTA_MAX, rtm_ipv4_policy);
+	err = nlmsg_validate(nlh, sizeof(*rtm), RTA_MAX, rtm_ipv4_policy,
+			     extack);
 	if (err < 0)
 		goto errout;
 
@@ -1337,7 +1339,7 @@ void __init ip_fib_init(void)
 	register_netdevice_notifier(&fib_netdev_notifier);
 	register_inetaddr_notifier(&fib_inetaddr_notifier);
 
-	rtnl_register(PF_INET, RTM_NEWROUTE, inet_rtm_newroute, NULL, NULL);
-	rtnl_register(PF_INET, RTM_DELROUTE, inet_rtm_delroute, NULL, NULL);
-	rtnl_register(PF_INET, RTM_GETROUTE, NULL, inet_dump_fib, NULL);
+	rtnl_register(PF_INET, RTM_NEWROUTE, inet_rtm_newroute, NULL, NULL, 0);
+	rtnl_register(PF_INET, RTM_DELROUTE, inet_rtm_delroute, NULL, NULL, 0);
+	rtnl_register(PF_INET, RTM_GETROUTE, NULL, inet_dump_fib, NULL, 0);
 }
