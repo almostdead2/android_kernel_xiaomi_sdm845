@@ -18,7 +18,7 @@ int rtnl_register_module(struct module *owner, int protocol, int msgtype,
 int __rtnl_register(int protocol, int msgtype,
 		    rtnl_doit_func, rtnl_dumpit_func, rtnl_calcit_func, unsigned int flags);
 void rtnl_register(int protocol, int msgtype,
-		   rtnl_doit_func, rtnl_dumpit_func, rtnl_calcit_func, unsigned int flags);
+		   rtnl_doit_func, rtnl_dumpit_func, unsigned int flags);
 int rtnl_unregister(int protocol, int msgtype);
 void rtnl_unregister_all(int protocol);
 
