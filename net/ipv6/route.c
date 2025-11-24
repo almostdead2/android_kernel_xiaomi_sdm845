@@ -3115,9 +3115,9 @@ static int inet6_rtm_delroute(struct sk_buff *skb, struct nlmsghdr *nlh,
 		return err;
 
 	if (cfg.fc_mp)
-		return ip6_route_multipath_del(&cfg, extack);
+		return ip6_route_multipath_del(&cfg);
 	else
-		return ip6_route_del(&cfg, extack);
+		return ip6_route_del(&cfg);
 }
 
 static int inet6_rtm_newroute(struct sk_buff *skb, struct nlmsghdr *nlh,
@@ -3131,9 +3131,9 @@ static int inet6_rtm_newroute(struct sk_buff *skb, struct nlmsghdr *nlh,
 		return err;
 
 	if (cfg.fc_mp)
-		return ip6_route_multipath_add(&cfg, extack);
+		return ip6_route_multipath_add(&cfg);
 	else
-		return ip6_route_add(&cfg, extack);
+		return ip6_route_add(&cfg);
 }
 
 static inline size_t rt6_nlmsg_size(struct rt6_info *rt)
