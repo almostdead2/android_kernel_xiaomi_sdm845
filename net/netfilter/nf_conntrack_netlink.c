@@ -922,7 +922,7 @@ static int ctnetlink_parse_tuple_ip(struct nlattr *attr,
 	struct nf_conntrack_l3proto *l3proto;
 	int ret = 0;
 
-	ret = nla_parse_nested(tb, CTA_IP_MAX, attr, NULL);
+	ret = nla_parse_nested(tb, CTA_IP_MAX, attr, NULL, NULL);
 	if (ret < 0)
 		return ret;
 
@@ -931,7 +931,7 @@ static int ctnetlink_parse_tuple_ip(struct nlattr *attr,
 
 	if (likely(l3proto->nlattr_to_tuple)) {
 		ret = nla_validate_nested(attr, CTA_IP_MAX,
-					  l3proto->nla_policy);
+					  l3proto->nla_policy, NULL);
 		if (ret == 0)
 			ret = l3proto->nlattr_to_tuple(tb, tuple);
 	}
@@ -952,7 +952,8 @@ static int ctnetlink_parse_tuple_proto(struct nlattr *attr,
 	struct nf_conntrack_l4proto *l4proto;
 	int ret = 0;
 
-	ret = nla_parse_nested(tb, CTA_PROTO_MAX, attr, proto_nla_policy);
+	ret = nla_parse_nested(tb, CTA_PROTO_MAX, attr, proto_nla_policy,
+			       NULL);
 	if (ret < 0)
 		return ret;
 
@@ -965,7 +966,7 @@ static int ctnetlink_parse_tuple_proto(struct nlattr *attr,
 
 	if (likely(l4proto->nlattr_to_tuple)) {
 		ret = nla_validate_nested(attr, CTA_PROTO_MAX,
-					  l4proto->nla_policy);
+					  l4proto->nla_policy, NULL);
 		if (ret == 0)
 			ret = l4proto->nlattr_to_tuple(tb, tuple);
 	}
@@ -1028,7 +1029,8 @@ ctnetlink_parse_tuple(const struct nlattr * const cda[],
 
 	memset(tuple, 0, sizeof(*tuple));
 
-	err = nla_parse_nested(tb, CTA_TUPLE_MAX, cda[type], tuple_nla_policy);
+	err = nla_parse_nested(tb, CTA_TUPLE_MAX, cda[type], tuple_nla_policy,
+			       NULL);
 	if (err < 0)
 		return err;
 
@@ -1080,7 +1082,7 @@ static int ctnetlink_parse_help(const struct nlattr *attr, char **helper_name,
 	int err;
 	struct nlattr *tb[CTA_HELP_MAX+1];
 
-	err = nla_parse_nested(tb, CTA_HELP_MAX, attr, help_nla_policy);
+	err = nla_parse_nested(tb, CTA_HELP_MAX, attr, help_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1139,7 +1141,8 @@ static int ctnetlink_flush_conntrack(struct net *net,
 static int ctnetlink_del_conntrack(struct net *net, struct sock *ctnl,
 				   struct sk_buff *skb,
 				   const struct nlmsghdr *nlh,
-				   const struct nlattr * const cda[])
+				   const struct nlattr * const cda[],
+				   struct netlink_ext_ack *extack)
 {
 	struct nf_conntrack_tuple_hash *h;
 	struct nf_conntrack_tuple tuple;
@@ -1192,7 +1195,8 @@ static int ctnetlink_del_conntrack(struct net *net, struct sock *ctnl,
 static int ctnetlink_get_conntrack(struct net *net, struct sock *ctnl,
 				   struct sk_buff *skb,
 				   const struct nlmsghdr *nlh,
-				   const struct nlattr * const cda[])
+				   const struct nlattr * const cda[],
+				   struct netlink_ext_ack *extack)
 {
 	struct nf_conntrack_tuple_hash *h;
 	struct nf_conntrack_tuple tuple;
@@ -1353,7 +1357,8 @@ ctnetlink_dump_dying(struct sk_buff *skb, struct netlink_callback *cb)
 static int ctnetlink_get_ct_dying(struct net *net, struct sock *ctnl,
 				  struct sk_buff *skb,
 				  const struct nlmsghdr *nlh,
-				  const struct nlattr * const cda[])
+				  const struct nlattr * const cda[],
+				  struct netlink_ext_ack *extack)
 {
 	if (nlh->nlmsg_flags & NLM_F_DUMP) {
 		struct netlink_dump_control c = {
@@ -1375,7 +1380,8 @@ ctnetlink_dump_unconfirmed(struct sk_buff *skb, struct netlink_callback *cb)
 static int ctnetlink_get_ct_unconfirmed(struct net *net, struct sock *ctnl,
 					struct sk_buff *skb,
 					const struct nlmsghdr *nlh,
-					const struct nlattr * const cda[])
+					const struct nlattr * const cda[],
+					struct netlink_ext_ack *extack)
 {
 	if (nlh->nlmsg_flags & NLM_F_DUMP) {
 		struct netlink_dump_control c = {
@@ -1584,7 +1590,8 @@ static int ctnetlink_change_protoinfo(struct nf_conn *ct,
 	struct nf_conntrack_l4proto *l4proto;
 	int err = 0;
 
-	err = nla_parse_nested(tb, CTA_PROTOINFO_MAX, attr, protoinfo_policy);
+	err = nla_parse_nested(tb, CTA_PROTOINFO_MAX, attr, protoinfo_policy,
+			       NULL);
 	if (err < 0)
 		return err;
 
@@ -1609,7 +1616,7 @@ static int change_seq_adj(struct nf_ct_seqadj *seq,
 	int err;
 	struct nlattr *cda[CTA_SEQADJ_MAX+1];
 
-	err = nla_parse_nested(cda, CTA_SEQADJ_MAX, attr, seqadj_policy);
+	err = nla_parse_nested(cda, CTA_SEQADJ_MAX, attr, seqadj_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -1899,7 +1906,8 @@ err1:
 static int ctnetlink_new_conntrack(struct net *net, struct sock *ctnl,
 				   struct sk_buff *skb,
 				   const struct nlmsghdr *nlh,
-				   const struct nlattr * const cda[])
+				   const struct nlattr * const cda[],
+				   struct netlink_ext_ack *extack)
 {
 	struct nf_conntrack_tuple otuple, rtuple;
 	struct nf_conntrack_tuple_hash *h = NULL;
@@ -2065,7 +2073,8 @@ ctnetlink_ct_stat_cpu_dump(struct sk_buff *skb, struct netlink_callback *cb)
 static int ctnetlink_stat_ct_cpu(struct net *net, struct sock *ctnl,
 				 struct sk_buff *skb,
 				 const struct nlmsghdr *nlh,
-				 const struct nlattr * const cda[])
+				 const struct nlattr * const cda[],
+				 struct netlink_ext_ack *extack)
 {
 	if (nlh->nlmsg_flags & NLM_F_DUMP) {
 		struct netlink_dump_control c = {
@@ -2110,7 +2119,8 @@ nlmsg_failure:
 
 static int ctnetlink_stat_ct(struct net *net, struct sock *ctnl,
 			     struct sk_buff *skb, const struct nlmsghdr *nlh,
-			     const struct nlattr * const cda[])
+			     const struct nlattr * const cda[],
+			     struct netlink_ext_ack *extack)
 {
 	struct sk_buff *skb2;
 	int err;
@@ -2814,7 +2824,8 @@ static int ctnetlink_dump_exp_ct(struct net *net, struct sock *ctnl,
 
 static int ctnetlink_get_expect(struct net *net, struct sock *ctnl,
 				struct sk_buff *skb, const struct nlmsghdr *nlh,
-				const struct nlattr * const cda[])
+				const struct nlattr * const cda[],
+				struct netlink_ext_ack *extack)
 {
 	struct nf_conntrack_tuple tuple;
 	struct nf_conntrack_expect *exp;
@@ -3020,7 +3031,7 @@ ctnetlink_parse_expect_nat(const struct nlattr *attr,
 	struct nf_conntrack_tuple nat_tuple = {};
 	int err;
 
-	err = nla_parse_nested(tb, CTA_EXPECT_NAT_MAX, attr, exp_nat_nla_policy);
+	err = nla_parse_nested(tb, CTA_EXPECT_NAT_MAX, attr, exp_nat_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
@@ -3187,7 +3198,8 @@ err_ct:
 
 static int ctnetlink_new_expect(struct net *net, struct sock *ctnl,
 				struct sk_buff *skb, const struct nlmsghdr *nlh,
-				const struct nlattr * const cda[])
+				const struct nlattr * const cda[],
+				struct netlink_ext_ack *extack)
 {
 	struct nf_conntrack_tuple tuple;
 	struct nf_conntrack_expect *exp;
