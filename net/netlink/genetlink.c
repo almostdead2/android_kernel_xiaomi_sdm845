@@ -659,7 +659,7 @@ static int genl_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
 	if (!family->parallel_ops)
 		genl_lock();
 
-	err = genl_family_rcv_msg(family, skb, nlh);
+	err = genl_family_rcv_msg(family, skb, nlh, extack);
 
 	if (!family->parallel_ops)
 		genl_unlock();
