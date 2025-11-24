@@ -613,7 +613,7 @@ static int genl_family_rcv_msg(struct genl_family *family,
 
 	if (attrbuf) {
 		err = nlmsg_parse(nlh, hdrlen, attrbuf, family->maxattr,
-				  ops->policy);
+				  ops->policy, extack);
 		if (err < 0)
 			goto out;
 	}
@@ -645,7 +645,8 @@ out:
 	return err;
 }
 
-static int genl_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+static int genl_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
+			struct netlink_ext_ack *extack)
 {
 	struct genl_family *family;
 	int err;
