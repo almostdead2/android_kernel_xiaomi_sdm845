@@ -564,7 +564,7 @@ static int nlattr_to_sctp(struct nlattr *cda[], struct nf_conn *ct)
 	err = nla_parse_nested(tb,
 			       CTA_PROTOINFO_SCTP_MAX,
 			       attr,
-			       sctp_nla_policy);
+			       sctp_nla_policy, NULL);
 	if (err < 0)
 		return err;
 
