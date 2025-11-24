@@ -447,7 +447,8 @@ static const struct nla_policy stab_policy[TCA_STAB_MAX + 1] = {
 	[TCA_STAB_DATA] = { .type = NLA_BINARY },
 };
 
-static struct qdisc_size_table *qdisc_get_stab(struct nlattr *opt)
+static struct qdisc_size_table *qdisc_get_stab(struct nlattr *opt,
+					       struct netlink_ext_ack *extack)
 {
 	struct nlattr *tb[TCA_STAB_MAX + 1];
 	struct qdisc_size_table *stab;
@@ -456,7 +457,7 @@ static struct qdisc_size_table *qdisc_get_stab(struct nlattr *opt)
 	u16 *tab = NULL;
 	int err;
 
-	err = nla_parse_nested(tb, TCA_STAB_MAX, opt, stab_policy);
+	err = nla_parse_nested(tb, TCA_STAB_MAX, opt, stab_policy, extack);
 	if (err < 0)
 		return ERR_PTR(err);
 	if (!tb[TCA_STAB_BASE])
@@ -1116,7 +1117,8 @@ check_loop_fn(struct Qdisc *q, unsigned long cl, struct qdisc_walker *w)
  * Delete/get qdisc.
  */
 
-static int tc_get_qdisc(struct sk_buff *skb, struct nlmsghdr *n)
+static int tc_get_qdisc(struct sk_buff *skb, struct nlmsghdr *n,
+			struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct tcmsg *tcm = nlmsg_data(n);
@@ -1131,7 +1133,8 @@ static int tc_get_qdisc(struct sk_buff *skb, struct nlmsghdr *n)
 	    !netlink_ns_capable(skb, net->user_ns, CAP_NET_ADMIN))
 		return -EPERM;
 
-	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL);
+	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL,
+			  extack);
 	if (err < 0)
 		return err;
 
@@ -1219,7 +1222,8 @@ EXPORT_SYMBOL(tc_qdisc_flow_control);
  * Create/change qdisc.
  */
 
-static int tc_modify_qdisc(struct sk_buff *skb, struct nlmsghdr *n)
+static int tc_modify_qdisc(struct sk_buff *skb, struct nlmsghdr *n,
+			   struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct tcmsg *tcm;
@@ -1234,7 +1238,8 @@ static int tc_modify_qdisc(struct sk_buff *skb, struct nlmsghdr *n)
 
 replay:
 	/* Reinit, just in case something touches this. */
-	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL);
+	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL,
+			  extack);
 	if (err < 0)
 		return err;
 
@@ -1576,7 +1581,8 @@ done:
 
 
 
-static int tc_ctl_tclass(struct sk_buff *skb, struct nlmsghdr *n)
+static int tc_ctl_tclass(struct sk_buff *skb, struct nlmsghdr *n,
+			 struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct tcmsg *tcm = nlmsg_data(n);
@@ -1595,7 +1601,8 @@ static int tc_ctl_tclass(struct sk_buff *skb, struct nlmsghdr *n)
 	    !netlink_ns_capable(skb, net->user_ns, CAP_NET_ADMIN))
 		return -EPERM;
 
-	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL);
+	err = nlmsg_parse(n, sizeof(*tcm), tca, TCA_MAX, NULL,
+			  extack);
 	if (err < 0)
 		return err;
 
@@ -2019,14 +2026,14 @@ static int __init pktsched_init(void)
 	register_qdisc(&mq_qdisc_ops);
 	register_qdisc(&noqueue_qdisc_ops);
 
-	rtnl_register(PF_UNSPEC, RTM_NEWQDISC, tc_modify_qdisc, NULL, NULL);
-	rtnl_register(PF_UNSPEC, RTM_DELQDISC, tc_get_qdisc, NULL, NULL);
+	rtnl_register(PF_UNSPEC, RTM_NEWQDISC, tc_modify_qdisc, NULL, NULL, 0);
+	rtnl_register(PF_UNSPEC, RTM_DELQDISC, tc_get_qdisc, NULL, NULL, 0);
 	rtnl_register(PF_UNSPEC, RTM_GETQDISC, tc_get_qdisc, tc_dump_qdisc,
-		      NULL);
-	rtnl_register(PF_UNSPEC, RTM_NEWTCLASS, tc_ctl_tclass, NULL, NULL);
-	rtnl_register(PF_UNSPEC, RTM_DELTCLASS, tc_ctl_tclass, NULL, NULL);
+		      NULL, 0);
+	rtnl_register(PF_UNSPEC, RTM_NEWTCLASS, tc_ctl_tclass, NULL, NULL, 0);
+	rtnl_register(PF_UNSPEC, RTM_DELTCLASS, tc_ctl_tclass, NULL, NULL, 0);
 	rtnl_register(PF_UNSPEC, RTM_GETTCLASS, tc_ctl_tclass, tc_dump_tclass,
-		      NULL);
+		      NULL, 0);
 
 	return 0;
 }
