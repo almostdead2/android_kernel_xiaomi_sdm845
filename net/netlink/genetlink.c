@@ -537,7 +537,8 @@ static int genl_lock_done(struct netlink_callback *cb)
 
 static int genl_family_rcv_msg(struct genl_family *family,
 			       struct sk_buff *skb,
-			       struct nlmsghdr *nlh)
+			       struct nlmsghdr *nlh,
+			       struct netlink_ext_ack *extack)
 {
 	const struct genl_ops *ops;
 	struct net *net = sock_net(skb->sk);
