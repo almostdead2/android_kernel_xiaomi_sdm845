@@ -1045,7 +1045,8 @@ static int nfq_id_after(unsigned int id, unsigned int max)
 static int nfqnl_recv_verdict_batch(struct net *net, struct sock *ctnl,
 				    struct sk_buff *skb,
 				    const struct nlmsghdr *nlh,
-			            const struct nlattr * const nfqa[])
+			            const struct nlattr * const nfqa[],
+				    struct netlink_ext_ack *extack)
 {
 	struct nfgenmsg *nfmsg = nlmsg_data(nlh);
 	struct nf_queue_entry *entry, *tmp;
@@ -1120,7 +1121,7 @@ static int nfqa_parse_bridge(struct nf_queue_entry *entry,
 		int err;
 
 		err = nla_parse_nested(tb, NFQA_VLAN_MAX, nfqa[NFQA_VLAN],
-				       nfqa_vlan_policy);
+				       nfqa_vlan_policy, NULL);
 		if (err < 0)
 			return err;
 
@@ -1149,7 +1150,8 @@ static int nfqa_parse_bridge(struct nf_queue_entry *entry,
 static int nfqnl_recv_verdict(struct net *net, struct sock *ctnl,
 			      struct sk_buff *skb,
 			      const struct nlmsghdr *nlh,
-			      const struct nlattr * const nfqa[])
+			      const struct nlattr * const nfqa[],
+			      struct netlink_ext_ack *extack)
 {
 	struct nfgenmsg *nfmsg = nlmsg_data(nlh);
 	u_int16_t queue_num = ntohs(nfmsg->res_id);
@@ -1213,7 +1215,8 @@ static int nfqnl_recv_verdict(struct net *net, struct sock *ctnl,
 
 static int nfqnl_recv_unsupp(struct net *net, struct sock *ctnl,
 			     struct sk_buff *skb, const struct nlmsghdr *nlh,
-			     const struct nlattr * const nfqa[])
+			     const struct nlattr * const nfqa[],
+			     struct netlink_ext_ack *extack)
 {
 	return -ENOTSUPP;
 }
@@ -1233,7 +1236,8 @@ static const struct nf_queue_handler nfqh = {
 
 static int nfqnl_recv_config(struct net *net, struct sock *ctnl,
 			     struct sk_buff *skb, const struct nlmsghdr *nlh,
-			     const struct nlattr * const nfqa[])
+			     const struct nlattr * const nfqa[],
+			     struct netlink_ext_ack *extack)
 {
 	struct nfgenmsg *nfmsg = nlmsg_data(nlh);
 	u_int16_t queue_num = ntohs(nfmsg->res_id);
