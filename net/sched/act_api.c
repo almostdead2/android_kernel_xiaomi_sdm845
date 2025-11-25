@@ -612,8 +612,7 @@ static void cleanup_a(struct list_head *actions, int ovr)
 }
 
 int tcf_action_init(struct net *net, struct nlattr *nla, struct nlattr *est,
-		    char *name, int ovr, int bind, struct list_head *actions,
-		    bool rtnl_held, struct netlink_ext_ack *extack)
+		    char *name, int ovr, int bind, struct list_head *actions, struct netlink_ext_ack *extack)
 {
 	struct nlattr *tb[TCA_ACT_MAX_PRIO + 1];
 	struct tc_action *act;
