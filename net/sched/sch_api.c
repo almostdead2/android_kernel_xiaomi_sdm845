@@ -1334,7 +1334,7 @@ replay:
 		return -EEXIST;
 	if (tca[TCA_KIND] && nla_strcmp(tca[TCA_KIND], q->ops->id))
 		return -EINVAL;
-	err = qdisc_change(q, tca);
+	err = qdisc_change(q, tca, extack);
 	if (err == 0)
 		qdisc_notify(net, skb, n, clid, NULL, q);
 	return err;
@@ -1346,7 +1346,7 @@ create_n_graft:
 		if (dev_ingress_queue(dev))
 			q = qdisc_create(dev, dev_ingress_queue(dev), p,
 					 tcm->tcm_parent, tcm->tcm_parent,
-					 tca, &err);
+					 tca, &err, extack);
 		else
 			err = -ENOENT;
 	} else {
@@ -1361,7 +1361,7 @@ create_n_graft:
 
 		q = qdisc_create(dev, dev_queue, p,
 				 tcm->tcm_parent, tcm->tcm_handle,
-				 tca, &err);
+				 tca, &err, extack);
 	}
 	if (q == NULL) {
 		if (err == -EAGAIN)
