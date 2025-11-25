@@ -1014,7 +1014,8 @@ static int xfrm_dump_sa(struct sk_buff *skb, struct netlink_callback *cb)
 		int err;
 
 		err = nlmsg_parse(cb->nlh, 0, attrs, XFRMA_MAX,
-				  xfrma_policy);
+				  xfrma_policy,
+				  NULL);
 		if (err < 0)
 			return err;
 
@@ -2632,7 +2633,8 @@ static const struct xfrm_link {
 	[XFRM_MSG_GETSPDINFO  - XFRM_MSG_BASE] = { .doit = xfrm_get_spdinfo   },
 };
 
-static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh,
+			     struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct nlattr *attrs[XFRMA_MAX+1];
@@ -2689,7 +2691,7 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 
 	err = nlmsg_parse(nlh, xfrm_msg_min[type], attrs,
 			  link->nla_max ? : XFRMA_MAX,
-			  link->nla_pol ? : xfrma_policy);
+			  link->nla_pol ? : xfrma_policy, extack);
 	if (err < 0)
 		goto err;
 
