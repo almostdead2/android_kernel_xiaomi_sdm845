@@ -625,7 +625,7 @@ int tcf_action_init(struct net *net, struct nlattr *nla, struct nlattr *est,
 		return err;
 
 	for (i = 1; i <= TCA_ACT_MAX_PRIO && tb[i]; i++) {
-		act = tcf_action_init_1(net, tb[i], est, name, ovr, bind);
+		act = tcf_action_init_1(net, tb[i], est, name, ovr, bind, extack);
 		if (IS_ERR(act)) {
 			err = PTR_ERR(act);
 			goto err;
@@ -950,13 +950,14 @@ tcf_add_notify(struct net *net, struct nlmsghdr *n, struct list_head *actions,
 }
 
 static int tcf_action_add(struct net *net, struct nlattr *nla,
-			  struct nlmsghdr *n, u32 portid, int ovr)
+			  struct nlmsghdr *n, u32 portid, int ovr,
+			  struct netlink_ext_ack *extack)
 {
 	int loop, ret;
 	LIST_HEAD(actions);
 
 	for (loop = 0; loop < 10; loop++) {
-		ret = tcf_action_init(net, nla, NULL, NULL, ovr, 0, &actions);
+		ret = tcf_action_init(net, nla, NULL, NULL, ovr, 0, &actions, extack);
 		if (ret != -EAGAIN)
 			break;
 	}
