@@ -527,7 +527,8 @@ errout:
 
 struct tc_action *tcf_action_init_1(struct net *net, struct nlattr *nla,
 				    struct nlattr *est, char *name, int ovr,
-				    int bind)
+				    int bind,
+				    struct netlink_ext_ack *extack)
 {
 	struct tc_action *a;
 	struct tc_action_ops *a_o;
@@ -537,7 +538,7 @@ struct tc_action *tcf_action_init_1(struct net *net, struct nlattr *nla,
 	int err;
 
 	if (name == NULL) {
-		err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL);
+		err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL, extack);
 		if (err < 0)
 			goto err_out;
 		err = -EINVAL;
@@ -611,14 +612,15 @@ static void cleanup_a(struct list_head *actions, int ovr)
 }
 
 int tcf_action_init(struct net *net, struct nlattr *nla, struct nlattr *est,
-		    char *name, int ovr, int bind, struct list_head *actions)
+		    char *name, int ovr, int bind, struct list_head *actions,
+		    bool rtnl_held, struct netlink_ext_ack *extack)
 {
 	struct nlattr *tb[TCA_ACT_MAX_PRIO + 1];
 	struct tc_action *act;
 	int err;
 	int i;
 
-	err = nla_parse_nested(tb, TCA_ACT_MAX_PRIO, nla, NULL);
+	err = nla_parse_nested(tb, TCA_ACT_MAX_PRIO, nla, NULL, extack);
 	if (err < 0)
 		return err;
 
@@ -743,7 +745,8 @@ act_get_notify(struct net *net, u32 portid, struct nlmsghdr *n,
 }
 
 static struct tc_action *tcf_action_get_1(struct net *net, struct nlattr *nla,
-					  struct nlmsghdr *n, u32 portid)
+					  struct nlmsghdr *n, u32 portid,
+					  struct netlink_ext_ack *extack)
 {
 	struct nlattr *tb[TCA_ACT_MAX + 1];
 	const struct tc_action_ops *ops;
@@ -751,7 +754,7 @@ static struct tc_action *tcf_action_get_1(struct net *net, struct nlattr *nla,
 	int index;
 	int err;
 
-	err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL);
+	err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL, extack);
 	if (err < 0)
 		goto err_out;
 
@@ -779,7 +782,8 @@ err_out:
 }
 
 static int tca_action_flush(struct net *net, struct nlattr *nla,
-			    struct nlmsghdr *n, u32 portid)
+			    struct nlmsghdr *n, u32 portid,
+			    struct netlink_ext_ack *extack)
 {
 	struct sk_buff *skb;
 	unsigned char *b;
@@ -800,7 +804,7 @@ static int tca_action_flush(struct net *net, struct nlattr *nla,
 
 	b = skb_tail_pointer(skb);
 
-	err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL);
+	err = nla_parse_nested(tb, TCA_ACT_MAX, nla, NULL, extack);
 	if (err < 0)
 		goto err_out;
 
@@ -879,14 +883,14 @@ tcf_del_notify(struct net *net, struct nlmsghdr *n, struct list_head *actions,
 
 static int
 tca_action_gd(struct net *net, struct nlattr *nla, struct nlmsghdr *n,
-	      u32 portid, int event)
+	      u32 portid, int event, struct netlink_ext_ack *extack)
 {
 	int i, ret;
 	struct nlattr *tb[TCA_ACT_MAX_PRIO + 1];
 	struct tc_action *act;
 	LIST_HEAD(actions);
 
-	ret = nla_parse_nested(tb, TCA_ACT_MAX_PRIO, nla, NULL);
+	ret = nla_parse_nested(tb, TCA_ACT_MAX_PRIO, nla, NULL, extack);
 	if (ret < 0)
 		return ret;
 
@@ -963,7 +967,8 @@ static int tcf_action_add(struct net *net, struct nlattr *nla,
 	return tcf_add_notify(net, n, &actions, portid);
 }
 
-static int tc_ctl_action(struct sk_buff *skb, struct nlmsghdr *n)
+static int tc_ctl_action(struct sk_buff *skb, struct nlmsghdr *n,
+			 struct netlink_ext_ack *extack)
 {
 	struct net *net = sock_net(skb->sk);
 	struct nlattr *tca[TCA_ACT_MAX + 1];
@@ -974,7 +979,8 @@ static int tc_ctl_action(struct sk_buff *skb, struct nlmsghdr *n)
 	    !netlink_capable(skb, CAP_NET_ADMIN))
 		return -EPERM;
 
-	ret = nlmsg_parse(n, sizeof(struct tcamsg), tca, TCA_ACT_MAX, NULL);
+	ret = nlmsg_parse(n, sizeof(struct tcamsg), tca, TCA_ACT_MAX, NULL,
+			  extack);
 	if (ret < 0)
 		return ret;
 
@@ -1018,19 +1024,19 @@ static struct nlattr *find_dump_kind(const struct nlmsghdr *n)
 	struct nlattr *nla[TCAA_MAX + 1];
 	struct nlattr *kind;
 
-	if (nlmsg_parse(n, sizeof(struct tcamsg), nla, TCAA_MAX, NULL) < 0)
+	if (nlmsg_parse(n, sizeof(struct tcamsg), nla, TCAA_MAX, NULL, NULL) < 0)
 		return NULL;
 	tb1 = nla[TCA_ACT_TAB];
 	if (tb1 == NULL)
 		return NULL;
 
 	if (nla_parse(tb, TCA_ACT_MAX_PRIO, nla_data(tb1),
-		      NLMSG_ALIGN(nla_len(tb1)), NULL) < 0)
+		      NLMSG_ALIGN(nla_len(tb1)), NULL, NULL) < 0)
 		return NULL;
 
 	if (tb[1] == NULL)
 		return NULL;
-	if (nla_parse_nested(tb2, TCA_ACT_MAX, tb[1], NULL) < 0)
+	if (nla_parse_nested(tb2, TCA_ACT_MAX, tb[1], NULL, NULL) < 0)
 		return NULL;
 	kind = tb2[TCA_ACT_KIND];
 
@@ -1094,10 +1100,10 @@ out_module_put:
 
 static int __init tc_action_init(void)
 {
-	rtnl_register(PF_UNSPEC, RTM_NEWACTION, tc_ctl_action, NULL, NULL);
-	rtnl_register(PF_UNSPEC, RTM_DELACTION, tc_ctl_action, NULL, NULL);
+	rtnl_register(PF_UNSPEC, RTM_NEWACTION, tc_ctl_action, NULL, NULL, 0);
+	rtnl_register(PF_UNSPEC, RTM_DELACTION, tc_ctl_action, NULL, NULL, 0);
 	rtnl_register(PF_UNSPEC, RTM_GETACTION, tc_ctl_action, tc_dump_action,
-		      NULL);
+		      NULL, 0);
 
 	return 0;
 }
