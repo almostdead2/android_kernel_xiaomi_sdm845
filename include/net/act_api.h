@@ -181,10 +181,11 @@ int tcf_action_exec(struct sk_buff *skb, struct tc_action **actions,
 		    int nr_actions, struct tcf_result *res);
 int tcf_action_init(struct net *net, struct nlattr *nla,
 				  struct nlattr *est, char *n, int ovr,
-				  int bind, struct list_head *);
+				  int bind, struct list_head *, struct netlink_ext_ack *extack);
 struct tc_action *tcf_action_init_1(struct net *net, struct nlattr *nla,
 				    struct nlattr *est, char *n, int ovr,
-				    int bind);
+				    int bind,
+				    struct netlink_ext_ack *extack);
 int tcf_action_dump(struct sk_buff *skb, struct list_head *, int, int);
 int tcf_action_dump_old(struct sk_buff *skb, struct tc_action *a, int, int);
 int tcf_action_dump_1(struct sk_buff *skb, struct tc_action *a, int, int);

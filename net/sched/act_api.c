@@ -896,13 +896,13 @@ tca_action_gd(struct net *net, struct nlattr *nla, struct nlmsghdr *n,
 
 	if (event == RTM_DELACTION && n->nlmsg_flags & NLM_F_ROOT) {
 		if (tb[1] != NULL)
-			return tca_action_flush(net, tb[1], n, portid);
+			return tca_action_flush(net, tb[1], n, portid, extack);
 		else
 			return -EINVAL;
 	}
 
 	for (i = 1; i <= TCA_ACT_MAX_PRIO && tb[i]; i++) {
-		act = tcf_action_get_1(net, tb[i], n, portid);
+		act = tcf_action_get_1(net, tb[i], n, portid, extack);
 		if (IS_ERR(act)) {
 			ret = PTR_ERR(act);
 			goto err;
@@ -1004,11 +1004,11 @@ static int tc_ctl_action(struct sk_buff *skb, struct nlmsghdr *n,
 		break;
 	case RTM_DELACTION:
 		ret = tca_action_gd(net, tca[TCA_ACT_TAB], n,
-				    portid, RTM_DELACTION);
+				    portid, RTM_DELACTION, extack);
 		break;
 	case RTM_GETACTION:
 		ret = tca_action_gd(net, tca[TCA_ACT_TAB], n,
-				    portid, RTM_GETACTION);
+				    portid, RTM_GETACTION, extack);
 		break;
 	default:
 		BUG();
