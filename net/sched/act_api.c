@@ -1001,7 +1001,8 @@ static int tc_ctl_action(struct sk_buff *skb, struct nlmsghdr *n,
 		 */
 		if (n->nlmsg_flags & NLM_F_REPLACE)
 			ovr = 1;
-		ret = tcf_action_add(net, tca[TCA_ACT_TAB], n, portid, ovr);
+		ret = tcf_action_add(net, tca[TCA_ACT_TAB], n, portid, ovr,
+				     extack);
 		break;
 	case RTM_DELACTION:
 		ret = tca_action_gd(net, tca[TCA_ACT_TAB], n,
