@@ -894,7 +894,8 @@ static struct lock_class_key qdisc_rx_lock;
 static struct Qdisc *qdisc_create(struct net_device *dev,
 				  struct netdev_queue *dev_queue,
 				  struct Qdisc *p, u32 parent, u32 handle,
-				  struct nlattr **tca, int *errp)
+				  struct nlattr **tca, int *errp,
+				  struct netlink_ext_ack *extack)
 {
 	int err;
 	struct nlattr *kind = tca[TCA_KIND];
@@ -974,7 +975,7 @@ static struct Qdisc *qdisc_create(struct net_device *dev,
 		}
 
 		if (tca[TCA_STAB]) {
-			stab = qdisc_get_stab(tca[TCA_STAB]);
+			stab = qdisc_get_stab(tca[TCA_STAB], extack);
 			if (IS_ERR(stab)) {
 				err = PTR_ERR(stab);
 				goto err_out4;
@@ -1034,7 +1035,8 @@ err_out4:
 	goto err_out3;
 }
 
-static int qdisc_change(struct Qdisc *sch, struct nlattr **tca)
+static int qdisc_change(struct Qdisc *sch, struct nlattr **tca,
+			struct netlink_ext_ack *extack)
 {
 	struct qdisc_size_table *ostab, *stab = NULL;
 	int err = 0;
@@ -1048,7 +1050,7 @@ static int qdisc_change(struct Qdisc *sch, struct nlattr **tca)
 	}
 
 	if (tca[TCA_STAB]) {
-		stab = qdisc_get_stab(tca[TCA_STAB]);
+		stab = qdisc_get_stab(tca[TCA_STAB], extack);
 		if (IS_ERR(stab))
 			return PTR_ERR(stab);
 	}
