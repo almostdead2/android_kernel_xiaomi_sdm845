@@ -56,8 +56,7 @@ static struct tc_action_ops act_mirred_ops;
 
 static int tcf_mirred_init(struct net *net, struct nlattr *nla,
 			   struct nlattr *est, struct tc_action **a, int ovr,
-			   int bind,
-			   struct netlink_ext_ack *extack)
+			   int bind)
 {
 	struct tc_action_net *tn = net_generic(net, mirred_net_id);
 	struct nlattr *tb[TCA_MIRRED_MAX + 1];
@@ -69,7 +68,7 @@ static int tcf_mirred_init(struct net *net, struct nlattr *nla,
 
 	if (nla == NULL)
 		return -EINVAL;
-	ret = nla_parse_nested(tb, TCA_MIRRED_MAX, nla, mirred_policy, extack);
+	ret = nla_parse_nested(tb, TCA_MIRRED_MAX, nla, mirred_policy, NULL);
 	if (ret < 0)
 		return ret;
 	if (tb[TCA_MIRRED_PARMS] == NULL)
