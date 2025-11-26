@@ -8520,7 +8520,7 @@ static int nl80211_join_ibss(struct sk_buff *skb, struct genl_info *info)
 
 		connkeys = nl80211_parse_connkeys(rdev,
 					  info->attrs[NL80211_ATTR_KEYS],
-					  &no_ht);
+					  info, &no_ht);
 		if (IS_ERR(connkeys))
 			return PTR_ERR(connkeys);
 
@@ -8913,7 +8913,7 @@ static int nl80211_connect(struct sk_buff *skb, struct genl_info *info)
 	}
 
 	if (connect.privacy && info->attrs[NL80211_ATTR_KEYS]) {
-		connkeys = nl80211_parse_connkeys(rdev,
+		connkeys = nl80211_parse_connkeys(rdev, info,
 					  info->attrs[NL80211_ATTR_KEYS], NULL);
 		if (IS_ERR(connkeys))
 			return PTR_ERR(connkeys);
