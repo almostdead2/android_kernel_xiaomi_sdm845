@@ -50,7 +50,8 @@ static const struct nla_policy allowedip_policy[WGALLOWEDIP_A_MAX + 1] = {
 };
 
 static struct wg_device *lookup_interface(struct nlattr **attrs,
-					  struct sk_buff *skb)
+					  struct sk_buff *skb,
+		       struct netlink_ext_ack *extack)
 {
 	struct net_device *dev = NULL;
 
@@ -200,7 +201,7 @@ static int wg_get_device_start(struct netlink_callback *cb)
 {
 	struct wg_device *wg;
 
-	wg = lookup_interface(genl_dumpit_info(cb)->attrs, cb->skb, NULL);
+	wg = lookup_interface(genl_dumpit_info(cb)->attrs, cb->skb, extack);
 	if (IS_ERR(wg))
 		return PTR_ERR(wg);
 	DUMP_CTX(cb)->wg = wg;
@@ -493,7 +494,7 @@ out:
 
 static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
 {
-	struct wg_device *wg = lookup_interface(info->attrs, skb);
+	struct wg_device *wg = lookup_interface(info->attrs, skb, extack);
 	u32 flags = 0;
 	int ret;
 
