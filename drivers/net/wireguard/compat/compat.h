@@ -547,8 +547,8 @@ static inline void *__compat_kvcalloc(size_t n, size_t size, gfp_t flags)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
 #include <net/netlink.h>
 #include <net/genetlink.h>
-#define nlmsg_parse(a, b, c, d, e, f) nlmsg_parse(a, b, c, d, e, f)
-#define nla_parse_nested(a, b, c, d, e) nla_parse_nested(a, b, c, d, e)
+#define nlmsg_parse(a, b, c, d, e, f) nlmsg_parse(a, b, c, d, e)
+#define nla_parse_nested(a, b, c, d, e) nla_parse_nested(a, b, c, d)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) && !defined(ISRHEL7)
