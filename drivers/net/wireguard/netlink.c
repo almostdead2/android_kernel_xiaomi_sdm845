@@ -196,12 +196,11 @@ err:
 	return -EMSGSIZE;
 }
 
-static int wg_get_device_start(struct netlink_callback *cb,
-		       struct netlink_ext_ack *extack)
+static int wg_get_device_start(struct netlink_callback *cb)
 {
 	struct wg_device *wg;
 
-	wg = lookup_interface(genl_dumpit_info(cb)->attrs, cb->skb, extack);
+	wg = lookup_interface(genl_dumpit_info(cb)->attrs, cb->skb, NULL);
 	if (IS_ERR(wg))
 		return PTR_ERR(wg);
 	DUMP_CTX(cb)->wg = wg;
@@ -459,7 +458,7 @@ static int set_peer(struct wg_device *wg, struct nlattr **attrs)
 
 		nla_for_each_nested(attr, attrs[WGPEER_A_ALLOWEDIPS], rem) {
 			ret = nla_parse_nested(allowedip, WGALLOWEDIP_A_MAX,
-					       attr, allowedip_policy, NULL, NULL);
+					       attr, allowedip_policy, NULL, 0);
 			if (ret < 0)
 				goto out;
 			ret = set_allowedip(peer, allowedip);
@@ -584,7 +583,7 @@ skip_set_private_key:
 
 		nla_for_each_nested(attr, info->attrs[WGDEVICE_A_PEERS], rem) {
 			ret = nla_parse_nested(peer, WGPEER_A_MAX, attr,
-					       peer_policy, NULL, NULL);
+					       peer_policy, NULL, 0);
 			if (ret < 0)
 				goto out;
 			ret = set_peer(wg, peer);
