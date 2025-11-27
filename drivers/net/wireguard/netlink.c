@@ -50,8 +50,7 @@ static const struct nla_policy allowedip_policy[WGALLOWEDIP_A_MAX + 1] = {
 };
 
 static struct wg_device *lookup_interface(struct nlattr **attrs,
-					  struct sk_buff *skb,
-		       struct netlink_ext_ack *extack)
+					  struct sk_buff *skb)
 {
 	struct net_device *dev = NULL;
 
@@ -197,7 +196,8 @@ err:
 	return -EMSGSIZE;
 }
 
-static int wg_get_device_start(struct netlink_callback *cb)
+static int wg_get_device_start(struct netlink_callback *cb,
+		       struct netlink_ext_ack *extack)
 {
 	struct wg_device *wg;
 
@@ -492,7 +492,8 @@ out:
 	return ret;
 }
 
-static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
+static int wg_set_device(struct sk_buff *skb, struct genl_info *info,
+		       struct netlink_ext_ack *extack)
 {
 	struct wg_device *wg = lookup_interface(info->attrs, skb, extack);
 	u32 flags = 0;
