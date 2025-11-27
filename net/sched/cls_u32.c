@@ -704,7 +704,8 @@ static const struct nla_policy u32_policy[TCA_U32_MAX + 1] = {
 static int u32_set_parms(struct net *net, struct tcf_proto *tp,
 			 unsigned long base, struct tc_u_hnode *ht,
 			 struct tc_u_knode *n, struct nlattr **tb,
-			 struct nlattr *est, bool ovr)
+			 struct nlattr *est, bool ovr,
+			 struct netlink_ext_ack *extack)
 {
 	struct tcf_exts e;
 	int err;
@@ -712,7 +713,7 @@ static int u32_set_parms(struct net *net, struct tcf_proto *tp,
 	err = tcf_exts_init(&e, TCA_U32_ACT, TCA_U32_POLICE);
 	if (err < 0)
 		return err;
-	err = tcf_exts_validate(net, tp, tb, est, &e, ovr);
+	err = tcf_exts_validate(net, tp, tb, est, &e, ovr, extack);
 	if (err < 0)
 		goto errout;
 
@@ -842,7 +843,8 @@ static struct tc_u_knode *u32_init_knode(struct tcf_proto *tp,
 
 static int u32_change(struct net *net, struct sk_buff *in_skb,
 		      struct tcf_proto *tp, unsigned long base, u32 handle,
-		      struct nlattr **tca, unsigned long *arg, bool ovr)
+		      struct nlattr **tca, unsigned long *arg, bool ovr,
+		      struct netlink_ext_ack *extack)
 {
 	struct tc_u_common *tp_c = tp->data;
 	struct tc_u_hnode *ht;
@@ -860,7 +862,7 @@ static int u32_change(struct net *net, struct sk_buff *in_skb,
 	if (opt == NULL)
 		return handle ? -EINVAL : 0;
 
-	err = nla_parse_nested(tb, TCA_U32_MAX, opt, u32_policy);
+	err = nla_parse_nested(tb, TCA_U32_MAX, opt, u32_policy, extack);
 	if (err < 0)
 		return err;
 
