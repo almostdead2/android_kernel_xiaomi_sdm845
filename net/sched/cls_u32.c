@@ -843,8 +843,7 @@ static struct tc_u_knode *u32_init_knode(struct tcf_proto *tp,
 
 static int u32_change(struct net *net, struct sk_buff *in_skb,
 		      struct tcf_proto *tp, unsigned long base, u32 handle,
-		      struct nlattr **tca, unsigned long *arg, bool ovr,
-		      struct netlink_ext_ack *extack)
+		      struct nlattr **tca, unsigned long *arg, bool ovr)
 {
 	struct tc_u_common *tp_c = tp->data;
 	struct tc_u_hnode *ht;
@@ -862,7 +861,7 @@ static int u32_change(struct net *net, struct sk_buff *in_skb,
 	if (opt == NULL)
 		return handle ? -EINVAL : 0;
 
-	err = nla_parse_nested(tb, TCA_U32_MAX, opt, u32_policy, extack);
+	err = nla_parse_nested(tb, TCA_U32_MAX, opt, u32_policy, NULL);
 	if (err < 0)
 		return err;
 
