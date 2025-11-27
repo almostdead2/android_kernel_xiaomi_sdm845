@@ -887,7 +887,7 @@ static int u32_change(struct net *net, struct sk_buff *in_skb,
 
 		err = u32_set_parms(net, tp, base,
 				    rtnl_dereference(n->ht_up), new, tb,
-				    tca[TCA_RATE], ovr, extack);
+				    tca[TCA_RATE], ovr, NULL);
 
 		if (err) {
 			u32_destroy_key(tp, new, false);
@@ -1014,7 +1014,7 @@ static int u32_change(struct net *net, struct sk_buff *in_skb,
 #endif
 
 	err = u32_set_parms(net, tp, base, ht, n, tb, tca[TCA_RATE], ovr,
-			    extack);
+			    NULL);
 	if (err == 0) {
 		struct tc_u_knode __rcu **ins;
 		struct tc_u_knode *pins;
