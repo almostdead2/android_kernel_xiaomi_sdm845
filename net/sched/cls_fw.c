@@ -241,7 +241,7 @@ errout:
 static int fw_change(struct net *net, struct sk_buff *in_skb,
 		     struct tcf_proto *tp, unsigned long base,
 		     u32 handle, struct nlattr **tca, unsigned long *arg,
-		     bool ovr)
+		     bool ovr, struct netlink_ext_ack *extack)
 {
 	struct fw_head *head = rtnl_dereference(tp->root);
 	struct fw_filter *f = (struct fw_filter *) *arg;
@@ -280,7 +280,7 @@ static int fw_change(struct net *net, struct sk_buff *in_skb,
 			return err;
 		}
 
-		err = fw_change_attrs(net, tp, fnew, tb, tca, base, ovr);
+		err = fw_change_attrs(net, tp, fnew, tb, tca, base, ovr, extack);
 		if (err < 0) {
 			tcf_exts_destroy(&fnew->exts);
 			kfree(fnew);
@@ -328,7 +328,7 @@ static int fw_change(struct net *net, struct sk_buff *in_skb,
 	f->id = handle;
 	f->tp = tp;
 
-	err = fw_change_attrs(net, tp, f, tb, tca, base, ovr);
+	err = fw_change_attrs(net, tp, f, tb, tca, base, ovr, extack);
 	if (err < 0)
 		goto errout;
 
