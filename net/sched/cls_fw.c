@@ -189,7 +189,8 @@ static const struct nla_policy fw_policy[TCA_FW_MAX + 1] = {
 static int
 fw_change_attrs(struct net *net, struct tcf_proto *tp, struct fw_filter *f,
 		struct nlattr **tb, struct nlattr **tca, unsigned long base,
-		bool ovr)
+		bool ovr,
+			struct netlink_ext_ack *extack)
 {
 	struct fw_head *head = rtnl_dereference(tp->root);
 	struct tcf_exts e;
@@ -199,7 +200,8 @@ fw_change_attrs(struct net *net, struct tcf_proto *tp, struct fw_filter *f,
 	err = tcf_exts_init(&e, TCA_FW_ACT, TCA_FW_POLICE);
 	if (err < 0)
 		return err;
-	err = tcf_exts_validate(net, tp, tb, tca[TCA_RATE], &e, ovr);
+	err = tcf_exts_validate(net, tp, tb, tca[TCA_RATE], &e, ovr,
+				extack);
 	if (err < 0)
 		goto errout;
 
@@ -250,7 +252,7 @@ static int fw_change(struct net *net, struct sk_buff *in_skb,
 	if (!opt)
 		return handle ? -EINVAL : 0; /* Succeed if it is old method. */
 
-	err = nla_parse_nested(tb, TCA_FW_MAX, opt, fw_policy);
+	err = nla_parse_nested(tb, TCA_FW_MAX, opt, fw_policy, NULL);
 	if (err < 0)
 		return err;
 
