@@ -388,7 +388,8 @@ static int cls_bpf_prog_from_efd(struct nlattr **tb, struct cls_bpf_prog *prog,
 static int cls_bpf_modify_existing(struct net *net, struct tcf_proto *tp,
 				   struct cls_bpf_prog *prog,
 				   unsigned long base, struct nlattr **tb,
-				   struct nlattr *est, bool ovr)
+				   struct nlattr *est, bool ovr,
+			     struct netlink_ext_ack *extack)
 {
 	bool is_bpf, is_ebpf, have_exts = false;
 	struct tcf_exts exts;
@@ -403,7 +404,7 @@ static int cls_bpf_modify_existing(struct net *net, struct tcf_proto *tp,
 	ret = tcf_exts_init(&exts, TCA_BPF_ACT, TCA_BPF_POLICE);
 	if (ret < 0)
 		return ret;
-	ret = tcf_exts_validate(net, tp, tb, est, &exts, ovr);
+	ret = tcf_exts_validate(net, tp, tb, est, &exts, ovr, extack);
 	if (ret < 0)
 		goto errout;
 
@@ -482,7 +483,8 @@ static int cls_bpf_change(struct net *net, struct sk_buff *in_skb,
 	if (tca[TCA_OPTIONS] == NULL)
 		return -EINVAL;
 
-	ret = nla_parse_nested(tb, TCA_BPF_MAX, tca[TCA_OPTIONS], bpf_policy);
+	ret = nla_parse_nested(tb, TCA_BPF_MAX, tca[TCA_OPTIONS], bpf_policy,
+			       NULL);
 	if (ret < 0)
 		return ret;
 
