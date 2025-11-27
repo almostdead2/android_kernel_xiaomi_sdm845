@@ -584,7 +584,7 @@ skip_set_private_key:
 
 		nla_for_each_nested(attr, info->attrs[WGDEVICE_A_PEERS], rem) {
 			ret = nla_parse_nested(peer, WGPEER_A_MAX, attr,
-					       peer_policy, NULL, NULL);
+					       peer_policy, NULL, 0);
 			if (ret < 0)
 				goto out;
 			ret = set_peer(wg, peer);
