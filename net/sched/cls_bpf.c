@@ -513,7 +513,7 @@ static int cls_bpf_change(struct net *net, struct sk_buff *in_skb,
 	}
 
 	ret = cls_bpf_modify_existing(net, tp, prog, base, tb, tca[TCA_RATE],
-				      ovr);
+				      ovr, NULL);
 	if (ret < 0)
 		goto errout;
 
