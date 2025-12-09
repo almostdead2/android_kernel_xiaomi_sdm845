@@ -1,6 +1,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/cpufreq.h>
+#include <linux/sched.h>
 #include <linux/sched/cpufreq.h>
 
 #include <../../kernel/sched/sched.h>
