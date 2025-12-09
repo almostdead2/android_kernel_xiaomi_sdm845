@@ -24,7 +24,4 @@
 
 #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
 
-void cpufreq_remove_update_util_hook(int cpu);
-#endif /* CONFIG_CPU_FREQ */
-
 #endif /* _LINUX_SCHED_CPUFREQ_H */
