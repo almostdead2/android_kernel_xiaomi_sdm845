@@ -43,6 +43,10 @@
 
 #include <linux/math64.h>
 
+#ifdef CONFIG_MEMPLUS
+#include <oneplus/memplus/memplus_helper.h>
+#endif
+
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
 EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_complete);
@@ -2120,6 +2124,17 @@ blk_qc_t submit_bio(struct bio *bio)
 				count);
 		}
 	}
+
+/*dylanchang, 2019/4/30, add foreground task io opt*/
+#ifdef CONFIG_MEMPLUS
+	if (current_is_swapind())
+		bio->bi_opf |= REQ_FG;
+	else if (high_prio_for_task(current))
+		bio->bi_opf |= REQ_FG;
+#else
+	if (high_prio_for_task(current))
+		bio->bi_opf |= REQ_FG;
+#endif
 
 	/*
 	 * If we're reading data that is part of the userspace
