@@ -2078,6 +2078,83 @@ out:
 }
 EXPORT_SYMBOL(generic_make_request);
 
+/*dylanchang, 2019/4/30, add foreground task io opt*/
+#define SYSTEM_APP_UID 1000
+static bool is_system_uid(struct task_struct *t)
+{
+	int cur_uid;
+
+	cur_uid = task_uid(t).val;
+	if (cur_uid ==  SYSTEM_APP_UID)
+		return true;
+
+	return false;
+}
+
+static bool is_zygote_process(struct task_struct *t)
+{
+	const struct cred *tcred = __task_cred(t);
+
+	struct task_struct *first_child = NULL;
+
+	if (t->children.next && t->children.next !=
+		(struct list_head *)&t->children.next)
+		first_child =
+			container_of(t->children.next,
+			struct task_struct, sibling);
+	if (!strcmp(t->comm, "main") && (tcred->uid.val == 0) &&
+		(t->parent != 0 && !strcmp(t->parent->comm, "init")))
+		return true;
+	else
+		return false;
+	return false;
+}
+
+static bool is_system_process(struct task_struct *t)
+{
+	if (is_system_uid(t)) {
+		if (t->group_leader && (
+			!strncmp(t->group_leader->comm, "system_server", 13) ||
+			!strncmp(t->group_leader->comm, "surfaceflinger", 14) ||
+			!strncmp(t->group_leader->comm, "servicemanager", 14) ||
+			!strncmp(t->group_leader->comm, "ndroid.systemui", 15)))
+			return true;
+	}
+	return false;
+}
+
+bool is_critial_process(struct task_struct *t)
+{
+	if (is_zygote_process(t) || is_system_process(t))
+		return true;
+
+	return false;
+}
+
+bool is_filter_process(struct task_struct *t)
+{
+	if (!strncmp(t->comm, "logcat", TASK_COMM_LEN))
+		return true;
+
+	return false;
+}
+static bool high_prio_for_task(struct task_struct *t)
+{
+	int cur_uid;
+
+	if (!sysctl_fg_io_opt)
+		return false;
+
+	cur_uid = task_uid(t).val;
+	if ((is_fg(cur_uid) && !is_system_uid(t) &&
+		!is_filter_process(t)) ||
+		is_critial_process(t))
+		return true;
+
+	return false;
+}
+
+
 /**
  * submit_bio - submit a bio to the block device layer for I/O
  * @bio: The &struct bio which describes the I/O
