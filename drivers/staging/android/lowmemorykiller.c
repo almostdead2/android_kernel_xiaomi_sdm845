@@ -621,8 +621,6 @@ static int get_free_ram(int *other_free, int *other_file,
 }
 #endif
 
-#include <linux/adj_chain.h>
-
 static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 {
 	struct task_struct *tsk;
